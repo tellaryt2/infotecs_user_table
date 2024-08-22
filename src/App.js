@@ -1,8 +1,10 @@
+import Table from './components/table/Table'
+
 
 function App() {
   return (
     <div className="App">
-      <p>213213213213213</p>
+      <Table/>
     </div>
   );
 }

@@ -1,0 +1,27 @@
+.content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px
+}
+
+.table {
+    border: 2px solid rgb(140 140 140);
+    width: 100%; 
+    border-collapse: collapse
+}
+
+.input-find {
+    margin-bottom: 20px; 
+    padding: 10px;
+    width: 100% 
+}
+
+thead {
+  background-color: rgb(228 240 245);
+}
+
+th,
+td {
+  border: 1px solid rgb(160 160 160);
+  padding: 8px 10px;
+}
