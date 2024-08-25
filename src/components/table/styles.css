@@ -10,10 +10,14 @@
     border-collapse: collapse
 }
 
-.input-find {
+.input-filters {
+    display: flex;
+    flex-direction: column;
+    row-gap: 15px;
     margin-bottom: 20px; 
     padding: 10px;
-    width: 100% 
+
+    width: 200px;
 }
 
 thead {
