@@ -10,6 +10,11 @@
     border-collapse: collapse
 }
 
+.table-title {
+  display: flex;
+  flex-direction: column;
+}
+
 .input-filters {
     display: flex;
     flex-direction: column;
