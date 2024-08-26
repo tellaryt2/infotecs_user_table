@@ -15,6 +15,11 @@
   flex-direction: column;
 }
 
+.table tbody tr:hover {
+  cursor: pointer;
+  background-color: rgb(243, 255, 255);
+}
+
 .input-filters {
     display: flex;
     flex-direction: column;
