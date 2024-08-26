@@ -14,7 +14,9 @@ function Table () {
     const [sortBy, setSortBy] = useState('');
     const [order, setOrder] = useState('asc');
     const [selectedUser, setSelectedUser] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false); 
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         if (gender) {
@@ -25,13 +27,27 @@ function Table () {
     }, [gender]);
 
     useEffect(() => {
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
+        const fetchData = async () => {
+            setIsLoading(true); 
+            setErrorMessage(''); 
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) {
+                    throw new Error(`Ошибка: ${res.status} ${res.statusText}`);
+                }
+                const data = await res.json();
                 setUsers(data.users);
-            })
-            .catch(err => console.error(err));
+            } catch (error) {
+                console.error(error);
+                setErrorMessage('Не удалось загрузить пользователей. Пожалуйста, попробуйте позже.');
+            } finally {
+                setIsLoading(false); 
+            }
+        };
+        fetchData();
     }, [url]);
+
 
     useEffect(() => {
         filterUsers(searchTerm, addressTerm, ageTerm, phoneTerm);
@@ -78,7 +94,6 @@ function Table () {
             const ageMatch = ageTerm ? user.age === Number(ageTerm) : true;
             const phone = `${user.phone}`.toLowerCase();
 
-            // Добавляем проверку на пол
             const genderMatch = gender ? user.gender.toLowerCase() === gender : true;
 
             return fullName.includes(nameTerm) && 
@@ -87,10 +102,27 @@ function Table () {
                    phone.includes(phoneTerm) && 
                    genderMatch;
         });
+
+        if (sortBy === 'address.address') {
+            filtered.sort((a, b) => {
+                const addressA = a.address.city.toLowerCase();
+                const addressB = b.address.city.toLowerCase();
+                if (order === 'asc') {
+                    return addressA.localeCompare(addressB);
+                } else {
+                    return addressB.localeCompare(addressA);
+                }
+            });
+        }
         setFilteredUsers(filtered);
     };
 
     const handleSort = (field, orderType) => {
+        if (field == "isNotSort") {
+            setSortBy('');
+            setOrder('asc');
+            return;
+        }
         if (sortBy === field && order === orderType) {
             setSortBy('');
             setOrder('asc');
@@ -112,6 +144,7 @@ function Table () {
 
     return (
     <div className='content'>
+    {errorMessage && <div className="error-message">{errorMessage}</div>}
       <h1>Таблица пользователей</h1>
       <div className='input-filters'>
             <input
@@ -163,6 +196,7 @@ function Table () {
                     </label>
                 </div>
         </div>
+        {isLoading && <div className="loading-message">Загрузка данных...</div>}
         <table className='table'>
             <thead>
                 <tr>
@@ -171,7 +205,7 @@ function Table () {
                             ФИО
                             <button onClick={() => handleSort('firstName', 'asc')}>Сортировать по возрастанию</button>
                             <button onClick={() => handleSort('firstName', 'desc')}>Сортировать по убыванию</button>
-                            <button onClick={() => handleSort('firstName', '')}>Без сортировки</button>
+                            <button onClick={() => handleSort('isNotSort', '')}>Без сортировки</button>
                         </div>
                     </th>
                     <th>
@@ -179,7 +213,7 @@ function Table () {
                             Возраст
                             <button onClick={() => handleSort('age', 'asc')}>Сортировать по возрастанию</button>
                             <button onClick={() => handleSort('age', 'desc')}>Сортировать по убыванию</button>
-                            <button onClick={() => handleSort('age', '')}>Без сортировки</button>
+                            <button onClick={() => handleSort('isNotSort', '')}>Без сортировки</button>
                         </div>
                     </th>
                     <th>
@@ -187,16 +221,18 @@ function Table () {
                             Пол
                             <button onClick={() => handleSort('gender', 'asc')}>Сортировать по возрастанию</button>
                             <button onClick={() => handleSort('gender', 'desc')}>Сортировать по убыванию</button>
-                            <button onClick={() => handleSort('gender', '')}>Без сортировки</button>
+                            <button onClick={() => handleSort('isNotSort', '')}>Без сортировки</button>
                         </div>
                     </th>
-                    <th>Номер телефона</th>
+                    <th>
+                        Номер телефона
+                    </th>
                     <th>
                         <div className='table-title'>   
                             Адрес
                             <button onClick={() => handleSort('address.address', 'asc')}>Сортировать по возрастанию</button>
                             <button onClick={() => handleSort('address.address', 'desc')}>Сортировать по убыванию</button>
-                            <button onClick={() => handleSort('address.address', '')}>Без сортировки</button>
+                            <button onClick={() => handleSort('isNotSort', '')}>Без сортировки</button>
                         </div>
                     </th>
                 </tr>
@@ -213,7 +249,6 @@ function Table () {
             ))}
             </tbody>
         </table>
-
         <ModalWindow isOpen={isModalOpen} onClose={closeModal} user={selectedUser} />
     </div>
   );
