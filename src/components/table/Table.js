@@ -3,21 +3,25 @@ import './styles.css'
 import ModalWindow from '../modalWindow/ModalWindow';
 
 function Table () {
-    const [users, setUsers] = useState([]);
-    const [filteredUsers, setFilteredUsers] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [addressTerm, setAddressTerm] = useState('');
-    const [ageTerm, setAgeTerm] = useState('');
-    const [phoneTerm, setPhoneTerm] = useState('');
-    const [url, setUrl] = useState('https://dummyjson.com/users/?limit=250');
-    const [gender, setGender] = useState('');
-    const [sortBy, setSortBy] = useState('');
-    const [order, setOrder] = useState('asc');
-    const [selectedUser, setSelectedUser] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false); 
-    const [errorMessage, setErrorMessage] = useState('');
 
+    const [users, setUsers] = useState([]); //Список пользователей
+    const [filteredUsers, setFilteredUsers] = useState([]); //Отфильтрованный список пользователей
+    const [searchTerm, setSearchTerm] = useState(''); //Поиск по ФИО
+    const [addressTerm, setAddressTerm] = useState(''); //Поиск по адресу
+    const [ageTerm, setAgeTerm] = useState(''); //Поиск по возрасту
+    const [phoneTerm, setPhoneTerm] = useState(''); //Поиск по телефону
+    const [url, setUrl] = useState('https://dummyjson.com/users/?limit=250'); //ссылка для получения запроса
+    const [gender, setGender] = useState(''); //фильтр для выбора пола
+    const [sortBy, setSortBy] = useState(''); //Поле по которому сортируются пользователи
+    const [order, setOrder] = useState('asc'); //Тип сортировки
+    const [selectedUser, setSelectedUser] = useState(null); //Выбранный пользователь в таблице
+    const [isModalOpen, setIsModalOpen] = useState(false); //Флаг для модального окна
+    const [isLoading, setIsLoading] = useState(false);  //Флаг для сообщения загрузки данных 
+    const [errorMessage, setErrorMessage] = useState(''); //Сообщение с ошибкой
+
+    /**
+     * Обновление отображения таблицы при фильтрации пользователей по полу
+     */
     useEffect(() => {
         if (gender) {
             setUrl(`https://dummyjson.com/users/filter?limit=250&key=gender&value=${gender}`);
@@ -26,6 +30,9 @@ function Table () {
         }
     }, [gender]);
 
+    /**
+     * получение данных по запросу через API
+     */
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true); 
@@ -48,16 +55,24 @@ function Table () {
         fetchData();
     }, [url]);
 
-
+    /**
+     * Обновление отображения таблицы при фильтрации пользователей
+     */
     useEffect(() => {
         filterUsers(searchTerm, addressTerm, ageTerm, phoneTerm);
     }, [users, searchTerm, addressTerm, ageTerm, phoneTerm, gender]);
 
+    /**
+     * обновление отображения таблицы после сортировки
+     */
     useEffect(() => {
         updateUrl()
         filterUsers(searchTerm, addressTerm, ageTerm, phoneTerm); // Ensure filtering is applied after sorting
     }, [sortBy, order]);
 
+    /**
+     * Обновление запроса  (&sortBy если необходим отсортированный массив)
+     */
     const updateUrl = () => {
         let newUrl = 'https://dummyjson.com/users/?limit=250';
         if (sortBy) {
@@ -66,27 +81,54 @@ function Table () {
         setUrl(newUrl);
     };
 
+    /**
+     * Обработчик строки поиска по ФИО
+     * @param {*} event 
+     */
     const handleSearch = (event) => {
         setSearchTerm(event.target.value.toLowerCase());
     };
 
+    /**
+     * Обработчик строки поиска по адресу
+     * @param {*} event 
+     */
     const handleAddressSearch = (event) => {
         setAddressTerm(event.target.value.toLowerCase());
     };
 
+    /**
+     * Обработчик строки поиска по возрасту
+     * @param {*} event 
+     */
     const handleAgeSearch = (event) => {
         setAgeTerm(event.target.value);
     };
 
+    /**
+     * Обработчик строки поиска по телефону
+     * @param {*} event 
+     */
     const handlePhoneSearch = (event) => {
         setPhoneTerm(event.target.value);
     };
 
+    /**
+     * Обработчик выбора пола
+     * @param {*} event 
+     */
     const handleGenderChange = (event) => {
         const { value } = event.target;
         setGender(gender === value ? '' : value);
     };
 
+    /**
+     * Фильтрация массива пользователей
+     * @param {*} nameTerm ФИО в поиске
+     * @param {*} addrTerm адрес в поиске
+     * @param {*} ageTerm возраст в поиске
+     * @param {*} phoneTerm телефон в поиске
+     */
     const filterUsers = (nameTerm, addrTerm, ageTerm, phoneTerm) => {
         const filtered = users.filter(user => {
             const fullName = `${user.firstName} ${user.lastName} ${user.maidenName}`.toLowerCase();
@@ -103,6 +145,7 @@ function Table () {
                    genderMatch;
         });
 
+        //сортировка по адресу
         if (sortBy === 'address.address') {
             filtered.sort((a, b) => {
                 const addressA = a.address.city.toLowerCase();
@@ -117,6 +160,12 @@ function Table () {
         setFilteredUsers(filtered);
     };
 
+    /**
+     * реализация сортировки
+     * @param {*} field поле по которому пользователи сортируются
+     * @param {*} orderType тип сортировки
+     * @returns 
+     */
     const handleSort = (field, orderType) => {
         if (field == "isNotSort") {
             setSortBy('');
@@ -132,11 +181,18 @@ function Table () {
         }
     };
 
+    /**
+     * Обработчик вызова модального окна пользователя
+     * @param {*} user пользователь
+     */
     const handleRowClick = (user) => {
         setSelectedUser(user);
         setIsModalOpen(true);
     };
 
+    /**
+     * Обработчик закрытия модального окна
+     */
     const closeModal = () => {
         setIsModalOpen(false);
         setSelectedUser(null);
@@ -203,25 +259,25 @@ function Table () {
                     <th>
                         <div className='table-title'>
                             ФИО
-                            <button onClick={() => handleSort('firstName', 'asc')}>Сортировать по возрастанию</button>
-                            <button onClick={() => handleSort('firstName', 'desc')}>Сортировать по убыванию</button>
-                            <button onClick={() => handleSort('isNotSort', '')}>Без сортировки</button>
+                            <button onClick={() => handleSort('firstName', 'asc')}>Сорт. по возрастанию</button>
+                            <button onClick={() => handleSort('firstName', 'desc')}>Сорт. по убыванию</button>
+                            <button onClick={() => handleSort('isNotSort', '')}>Без сорт.</button>
                         </div>
                     </th>
                     <th>
                         <div className='table-title'>
                             Возраст
-                            <button onClick={() => handleSort('age', 'asc')}>Сортировать по возрастанию</button>
-                            <button onClick={() => handleSort('age', 'desc')}>Сортировать по убыванию</button>
-                            <button onClick={() => handleSort('isNotSort', '')}>Без сортировки</button>
+                            <button onClick={() => handleSort('age', 'asc')}>Сорт. по возрастанию</button>
+                            <button onClick={() => handleSort('age', 'desc')}>Сорт. по убыванию</button>
+                            <button onClick={() => handleSort('isNotSort', '')}>Без сорт.</button>
                         </div>
                     </th>
                     <th>
                         <div className='table-title'>
                             Пол
-                            <button onClick={() => handleSort('gender', 'asc')}>Сортировать по возрастанию</button>
-                            <button onClick={() => handleSort('gender', 'desc')}>Сортировать по убыванию</button>
-                            <button onClick={() => handleSort('isNotSort', '')}>Без сортировки</button>
+                            <button onClick={() => handleSort('gender', 'asc')}>Сорт. по возрастанию</button>
+                            <button onClick={() => handleSort('gender', 'desc')}>Сорт. по убыванию</button>
+                            <button onClick={() => handleSort('isNotSort', '')}>Без сорт.</button>
                         </div>
                     </th>
                     <th>
@@ -230,9 +286,9 @@ function Table () {
                     <th>
                         <div className='table-title'>   
                             Адрес
-                            <button onClick={() => handleSort('address.address', 'asc')}>Сортировать по возрастанию</button>
-                            <button onClick={() => handleSort('address.address', 'desc')}>Сортировать по убыванию</button>
-                            <button onClick={() => handleSort('isNotSort', '')}>Без сортировки</button>
+                            <button onClick={() => handleSort('address.address', 'asc')}>Сорт. по возрастанию</button>
+                            <button onClick={() => handleSort('address.address', 'desc')}>Сорт. по убыванию</button>
+                            <button onClick={() => handleSort('isNotSort', '')}>Без сорт.</button>
                         </div>
                     </th>
                 </tr>

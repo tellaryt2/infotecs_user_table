@@ -15,6 +15,21 @@
     padding: 20px;
     border-radius: 8px;
     width: 300px;
+
+    display: flex;
+    align-items: flex-start;
+}
+
+.modal-content button,button:focus,button:active
+{
+  border:none;
+  background:none;
+  outline:none;
+}
+
+.modal-content button:hover {
+  cursor: pointer;
+  color: #496153;
 }
 
 .modal-content h2 {
